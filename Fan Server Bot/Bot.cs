@@ -28,8 +28,16 @@ namespace Fan_Server_Bot
 			client.Connected += OnConnected;
 			client.Disconnected += OnDisconnected;
 			
-            await client.LoginAsync(Discord.TokenType.Bot, config.Token);
-			await client.StartAsync();
+            if (config.Token != null)
+            {
+                await client.LoginAsync(Discord.TokenType.Bot, config.Token);
+			    await client.StartAsync();
+            }
+            else
+            {
+                mainEventLog.WriteEntry("Missing bot token!", EventLogEntryType.Error);
+                service.Stop();
+            }
         }
 
         internal async void StopAsync()
