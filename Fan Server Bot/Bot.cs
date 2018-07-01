@@ -26,7 +26,7 @@ namespace Fan_Server_Bot
 
 			client.Log += OnLog;
 			client.Connected += OnConnected;
-			client.Disconnected += OnFatalError;
+			client.Disconnected += OnDisconnected;
 			
             await client.LoginAsync(Discord.TokenType.Bot, config.Token);
 			await client.StartAsync();
@@ -84,10 +84,10 @@ namespace Fan_Server_Bot
 				service.Stop();
 		}
 
-		private async Task OnFatalError(Exception exc)
+		private async Task OnDisconnected(Exception exc)
 		{
 			StringBuilder excBuilder = new StringBuilder();
-			excBuilder.Append("An unexpected exception occured: ");
+			excBuilder.Append("The client was disconnected: ");
 			excBuilder.Append(exc.Message);
 			excBuilder.AppendLine();
 			excBuilder.AppendLine();
