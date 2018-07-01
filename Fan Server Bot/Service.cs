@@ -15,6 +15,8 @@ namespace Fan_Server_Bot
         private const string EVENT_SOURCE = "Fan Server";
         private const string EVENT_LOG = "Chat Bot";
         private EventLog mainEventLog;
+        private Bot bot;
+        private Task starting;
 
         public Service()
         {
@@ -24,15 +26,41 @@ namespace Fan_Server_Bot
             mainEventLog.Source = EVENT_SOURCE;
             mainEventLog.Log = EVENT_LOG;
 
-            ServiceName = "CJ Fan Server Bot";
-        }
+			InitializeComponent();
+		}
 
         protected override void OnStart(string[] args)
         {
+			try
+			{
+				bot = new Bot();
+				starting = bot.StartAsync(this, mainEventLog);
+			}
+			catch (Exception exc)
+			{
+				StringBuilder excBuilder = new StringBuilder();
+				excBuilder.Append("An unexpected exception occured: ");
+				excBuilder.Append(exc.Message);
+				excBuilder.AppendLine();
+				excBuilder.AppendLine();
+				excBuilder.Append(exc.StackTrace);
+				mainEventLog.WriteEntry(excBuilder.ToString(), EventLogEntryType.Error);
+				Stop();
+			}
         }
 
         protected override void OnStop()
         {
+            starting.ContinueWith(task => bot.StopAsync());
         }
-    }
+
+		private void InitializeComponent()
+		{
+			// 
+			// Service
+			// 
+			this.ServiceName = "CJ Fan Server Bot";
+
+		}
+	}
 }
