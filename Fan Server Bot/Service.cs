@@ -25,6 +25,7 @@ namespace Fan_Server_Bot
                 EventLog.CreateEventSource(EVENT_SOURCE, EVENT_LOG);
             mainEventLog.Source = EVENT_SOURCE;
             mainEventLog.Log = EVENT_LOG;
+            Bot.MainEventLog = mainEventLog;
 
 			InitializeComponent();
 		}
@@ -34,7 +35,7 @@ namespace Fan_Server_Bot
 			try
 			{
 				bot = new Bot();
-				starting = bot.StartAsync(this, mainEventLog);
+				starting = bot.StartAsync(this);
 			}
 			catch (Exception exc)
 			{

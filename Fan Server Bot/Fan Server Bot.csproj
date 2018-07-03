@@ -137,6 +137,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
+    <Compile Include="CmdsManager.cs" />
+    <Compile Include="Commands\HelpCmd.cs" />
+    <Compile Include="ICmd.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -164,18 +167,14 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
     <GetFrameworkPath>
-      <Output
-          TaskParameter="Path"
-          PropertyName="FrameworkPath" />
+      <Output TaskParameter="Path" PropertyName="FrameworkPath" />
     </GetFrameworkPath>
-    <Exec Command='$(FrameworkPath)\InstallUtil.exe "$(TargetPath)"' />
+    <Exec Command="$(FrameworkPath)\InstallUtil.exe &quot;$(TargetPath)&quot;" />
   </Target>
   <Target Name="BeforeClean">
     <GetFrameworkPath>
-      <Output
-          TaskParameter="Path"
-          PropertyName="FrameworkPath" />
+      <Output TaskParameter="Path" PropertyName="FrameworkPath" />
     </GetFrameworkPath>
-    <Exec Command='$(FrameworkPath)\InstallUtil.exe /u "$(TargetPath)"' />
+    <Exec Command="$(FrameworkPath)\InstallUtil.exe /u &quot;$(TargetPath)&quot;" />
   </Target>
 </Project>

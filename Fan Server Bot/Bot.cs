@@ -15,18 +15,21 @@ namespace Fan_Server_Bot
 		private ServiceBase service;
 		private BotConfig config;
 		private DiscordSocketClient client;
-		private EventLog mainEventLog;
 
-        internal async Task StartAsync(ServiceBase service, EventLog eventLog)
+        public static EventLog MainEventLog { get; internal set; }
+
+        internal async Task StartAsync(ServiceBase service)
         {
             config = BotConfig.Instance;
 			client = new DiscordSocketClient();
-			mainEventLog = eventLog;
-			this.service = service;
+            CmdsManager cmds = new CmdsManager();
+            this.service = service;
 
 			client.Log += OnLog;
 			client.Connected += OnConnected;
 			client.Disconnected += OnDisconnected;
+            
+            client.MessageReceived += cmds.OnMessage;
 			
             if (config.Token != null)
             {
@@ -35,7 +38,7 @@ namespace Fan_Server_Bot
             }
             else
             {
-                mainEventLog.WriteEntry("Missing bot token!", EventLogEntryType.Error);
+                MainEventLog.WriteEntry("Missing bot token!", EventLogEntryType.Error);
                 service.Stop();
             }
         }
@@ -50,7 +53,7 @@ namespace Fan_Server_Bot
 		{
 			if (config.Name != null && client.CurrentUser.Username != config.Name)
 			{
-				mainEventLog.WriteEntry("The username is incorrect and will be modified.");
+				MainEventLog.WriteEntry("The username is incorrect and will be modified.");
 				await client.CurrentUser.ModifyAsync(user =>
 					user.Username = config.Name);
 			}
@@ -87,7 +90,7 @@ namespace Fan_Server_Bot
 					break;
 			}
 
-			mainEventLog.WriteEntry(excBuilder.ToString(), entryType);
+			MainEventLog.WriteEntry(excBuilder.ToString(), entryType);
 			if (critical)
 				service.Stop();
 		}
@@ -100,11 +103,11 @@ namespace Fan_Server_Bot
 			excBuilder.AppendLine();
 			excBuilder.AppendLine();
 			excBuilder.Append(exc.StackTrace);
-			mainEventLog.WriteEntry(excBuilder.ToString(), EventLogEntryType.Error);
+			MainEventLog.WriteEntry(excBuilder.ToString(), EventLogEntryType.Error);
 		}
     }
 
-    internal class BotConfig
+    public class BotConfig
     {
         private static BotConfig _instance;
         private static string _regKey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\CJFanServerBot";
@@ -136,6 +139,30 @@ namespace Fan_Server_Bot
             get
             {
 				return (string) Registry.GetValue(_regKey, "Name", null);
+            }
+        }
+
+        public string CmdPrefix
+        {
+            get
+            {
+                return (string)Registry.GetValue(_regKey, "CmdPrefix", "/");
+            }
+        }
+
+        public ulong OwnerRoleId
+        {
+            get
+            {
+                return (ulong) (long) Registry.GetValue(_regKey, "OwnerRoleId", 0);
+            }
+        }
+
+        internal int CmdTimeout
+        {
+            get
+            {
+                return (int) Registry.GetValue(_regKey, "CmdTimeout", Double.MaxValue);
             }
         }
     }
