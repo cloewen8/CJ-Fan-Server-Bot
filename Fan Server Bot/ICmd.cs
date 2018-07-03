@@ -5,12 +5,10 @@ using System.Threading.Tasks;
 
 namespace Fan_Server_Bot
 {
-    public interface ICmd
-    {
-        Regex Pattern { get; }
-
-        bool OwnerOnly { get; }
-
-        Task Execute(SocketMessage message, CaptureCollection args, CancellationToken cancelToken);
-    }
+	public interface ICmd
+	{
+		Regex Pattern { get; }
+		bool OwnerOnly { get; }
+		Task Execute(SocketMessage message, CaptureCollection args, CancellationToken cancelToken);
+	}
 }

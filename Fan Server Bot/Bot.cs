@@ -10,53 +10,54 @@ using Microsoft.Win32;
 
 namespace Fan_Server_Bot
 {
-    class Bot
-    {
+	class Bot
+	{
 		private ServiceBase service;
 		private BotConfig config;
 		private DiscordSocketClient client;
 
-        public static EventLog MainEventLog { get; internal set; }
+		public static EventLog MainEventLog { get; internal set; }
 
-        internal async Task StartAsync(ServiceBase service)
-        {
-            config = BotConfig.Instance;
+		internal async Task StartAsync(ServiceBase service)
+		{
+			config = BotConfig.Instance;
 			client = new DiscordSocketClient();
-            CmdsManager cmds = new CmdsManager();
-            this.service = service;
+			this.service = service;
 
 			client.Log += OnLog;
 			client.Connected += OnConnected;
 			client.Disconnected += OnDisconnected;
-            
-            client.MessageReceived += cmds.OnMessage;
-			
-            if (config.Token != null)
-            {
-                await client.LoginAsync(Discord.TokenType.Bot, config.Token);
-			    await client.StartAsync();
-            }
-            else
-            {
-                MainEventLog.WriteEntry("Missing bot token!", EventLogEntryType.Error);
-                service.Stop();
-            }
-        }
 
-        internal async void StopAsync()
-        {
+			if (config.Token != null)
+			{
+				await client.LoginAsync(Discord.TokenType.Bot, config.Token);
+				await client.StartAsync();
+			}
+			else
+			{
+				MainEventLog.WriteEntry("Missing bot token!", EventLogEntryType.Error);
+				service.Stop();
+			}
+		}
+
+		internal async void StopAsync()
+		{
 			await client.LogoutAsync();
-            await client.StopAsync();
-        }
+			await client.StopAsync();
+		}
 
 		private async Task OnConnected()
 		{
+			CmdsManager cmds = new CmdsManager(client.CurrentUser.Id);
+
 			if (config.Name != null && client.CurrentUser.Username != config.Name)
 			{
 				MainEventLog.WriteEntry("The username is incorrect and will be modified.");
 				await client.CurrentUser.ModifyAsync(user =>
 					user.Username = config.Name);
 			}
+
+			client.MessageReceived += cmds.OnMessage;
 		}
 
 		private async Task OnLog(Discord.LogMessage message)
@@ -105,65 +106,65 @@ namespace Fan_Server_Bot
 			excBuilder.Append(exc.StackTrace);
 			MainEventLog.WriteEntry(excBuilder.ToString(), EventLogEntryType.Error);
 		}
-    }
+	}
 
-    public class BotConfig
-    {
-        private static BotConfig _instance;
-        private static string _regKey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\CJFanServerBot";
+	public class BotConfig
+	{
+		private static BotConfig _instance;
+		private static string _regKey = "HKEY_LOCAL_MACHINE\\SOFTWARE\\CJFanServerBot";
 
-        private BotConfig()
-        {
-        }
+		private BotConfig()
+		{
+		}
 
-        public static BotConfig Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = new BotConfig();
-                return _instance;
-            }
-        }
+		public static BotConfig Instance
+		{
+			get
+			{
+				if (_instance == null)
+					_instance = new BotConfig();
+				return _instance;
+			}
+		}
 
-        internal string Token
-        {
-            get
-            {
-                return (string) Registry.GetValue(_regKey, "Token", null);
-            }
-        }
+		internal string Token
+		{
+			get
+			{
+				return (string) Registry.GetValue(_regKey, "Token", null);
+			}
+		}
 
-        public string Name
-        {
-            get
-            {
+		public string Name
+		{
+			get
+			{
 				return (string) Registry.GetValue(_regKey, "Name", null);
-            }
-        }
+			}
+		}
 
-        public string CmdPrefix
-        {
-            get
-            {
-                return (string)Registry.GetValue(_regKey, "CmdPrefix", "/");
-            }
-        }
+		public string CmdPrefix
+		{
+			get
+			{
+				return (string)Registry.GetValue(_regKey, "CmdPrefix", "/");
+			}
+		}
 
-        public ulong OwnerRoleId
-        {
-            get
-            {
-                return (ulong) (long) Registry.GetValue(_regKey, "OwnerRoleId", 0);
-            }
-        }
+		public ulong OwnerRoleId
+		{
+			get
+			{
+				return (ulong) (long) Registry.GetValue(_regKey, "OwnerRoleId", 0);
+			}
+		}
 
-        internal int CmdTimeout
-        {
-            get
-            {
-                return (int) Registry.GetValue(_regKey, "CmdTimeout", Double.MaxValue);
-            }
-        }
-    }
+		internal int CmdTimeout
+		{
+			get
+			{
+				return (int) Registry.GetValue(_regKey, "CmdTimeout", Double.MaxValue);
+			}
+		}
+	}
 }
