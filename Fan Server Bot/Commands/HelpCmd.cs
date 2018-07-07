@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Fan_Server_Bot;
+using Fan_Server_Bot.res;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,25 +17,15 @@ namespace HelpCmd
 		private readonly BotConfig config;
 		private readonly Color primaryColor = new Color(231, 76, 60);
 		// Syntax: https://developers.google.com/style/code-syntax
-		private readonly string description =
-@"Below is a list of commands that you currently have access to.
-
-To execute a command, chat the syntax provided for the desired command.
-
-- If a command spans multiple lines, you will need to provide multiple messages.
-- Text items on their own are required.
-- Optional items are surrounded by square brackets.
-- You need to choose an item for text items surrounded by braces, separated by vertical bars.
-
-**Example:** */help*";
+		private readonly string body = strings.HelpBody;
 
 		public Regex Pattern => new Regex(@"(?:help|\?)");
 		public bool OwnerOnly => false;
 		private IEnumerable<ICmd> Cmds { get; set; }
 
-		public string Name => "Help";
+		public string Name => strings.HelpName;
 		public string[] Description => new string[] {
-			"Displays help information for the bot."
+			strings.HelpDescription1
 		};
 		public string[] Usage => new string[] {
 			"help"
@@ -51,9 +42,9 @@ To execute a command, chat the syntax provided for the desired command.
 		{
 			EmbedBuilder builder = new EmbedBuilder
 			{
-				Title = "Help",
+				Title = Name,
 				Color = primaryColor,
-				Description = description
+				Description = body
 			};
 			AddCmdFields((from cmd in Cmds
 			              where cmd is IDoc && CmdsManager.AllowedCmd(cmd, message.Author)
@@ -70,11 +61,15 @@ To execute a command, chat the syntax provided for the desired command.
 			{
 				stringBuilder.AppendLine(String.Join("\n", cmd.Description));
 				stringBuilder.AppendLine();
-				stringBuilder.AppendLine("**Usage**");
+				stringBuilder.AppendLine("**");
+				stringBuilder.Append(strings.HelpUsage);
+				stringBuilder.Append("**");
 				stringBuilder.Append(config.CmdPrefix);
 				stringBuilder.AppendLine(String.Join("\n", cmd.Usage));
 				stringBuilder.AppendLine();
-				stringBuilder.Append("**Example:** *");
+				stringBuilder.Append("**");
+				stringBuilder.Append(strings.HelpExample);
+				stringBuilder.Append("** *");
 				stringBuilder.Append(config.CmdPrefix);
 				stringBuilder.Append(cmd.Example);
 				stringBuilder.Append("*");

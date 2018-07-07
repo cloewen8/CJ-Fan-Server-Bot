@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Fan_Server_Bot.res;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -79,7 +80,7 @@ namespace Fan_Server_Bot
 			}
 			catch (TimeoutException)
 			{
-				Bot.MainEventLog.WriteEntry("A command ran out of time to respond.", EventLogEntryType.Warning);
+				Bot.MainEventLog.WriteEntry(strings.CmdOutOfTime, EventLogEntryType.Warning);
 				await message.Channel.SendMessageAsync(
 					"The " + config.Name + " ran out of time to respond! Try again shortly.");
 			}
@@ -92,7 +93,7 @@ namespace Fan_Server_Bot
 				excBuilder.AppendLine();
 				excBuilder.Append(exc.StackTrace);
 				Bot.MainEventLog.WriteEntry(excBuilder.ToString(), EventLogEntryType.Error);
-				await message.Channel.SendMessageAsync("A command failed to execute. Please contact the server owner.");
+				await message.Channel.SendMessageAsync(strings.CmdFailedToExecute);
 			}
 		}
 
