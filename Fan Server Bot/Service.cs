@@ -32,6 +32,7 @@ namespace Fan_Server_Bot
 
 		protected override void OnStart(string[] args)
 		{
+			Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.BelowNormal;
 			bot = new Bot();
 			starting = bot.StartAsync(this);
 			starting.ContinueWith((task) =>
