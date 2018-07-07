@@ -15,6 +15,7 @@ namespace Fan_Server_Bot
 		private ServiceBase service;
 		private BotConfig config;
 		private DiscordSocketClient client;
+		private CmdsManager cmds;
 
 		public static EventLog MainEventLog { get; internal set; }
 
@@ -44,11 +45,12 @@ namespace Fan_Server_Bot
 		{
 			await client.LogoutAsync();
 			await client.StopAsync();
+			cmds.ClearRequests();
 		}
 
 		private async Task OnConnected()
 		{
-			CmdsManager cmds = new CmdsManager(client.CurrentUser.Id);
+			cmds = new CmdsManager(client.CurrentUser.Id);
 
 			if (config.Name != null && client.CurrentUser.Username != config.Name)
 			{

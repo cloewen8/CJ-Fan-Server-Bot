@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fan Server Bot", "Fan Serve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttachmentService", "..\..\AttachmentFileSccaner\Source\AttachmentService.csproj", "{2A5F8DDC-457D-456E-A518-D320DA094147}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fan Server Bot Tests", "Fan Server Bot Tests\Fan Server Bot Tests.csproj", "{BE4B5B49-B400-4538-B26C-B02AAB7B6991}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{2A5F8DDC-457D-456E-A518-D320DA094147}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A5F8DDC-457D-456E-A518-D320DA094147}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A5F8DDC-457D-456E-A518-D320DA094147}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE4B5B49-B400-4538-B26C-B02AAB7B6991}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE4B5B49-B400-4538-B26C-B02AAB7B6991}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE4B5B49-B400-4538-B26C-B02AAB7B6991}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE4B5B49-B400-4538-B26C-B02AAB7B6991}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

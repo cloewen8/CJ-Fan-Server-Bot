@@ -139,6 +139,7 @@
     <Compile Include="CmdsManager.cs" />
     <Compile Include="Commands\HelpCmd.cs" />
     <Compile Include="ICmd.cs" />
+    <Compile Include="MessageExtensions.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>

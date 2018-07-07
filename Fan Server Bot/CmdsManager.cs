@@ -14,9 +14,12 @@ namespace Fan_Server_Bot
 {
 	class CmdsManager
 	{
+		private const string CANCEL_MESSAGE = "cancel";
+
 		private List<ICmd> cmds = new List<ICmd>();
 		private readonly ICmd helpCmd;
 		private readonly string botMention;
+		private Queue<Queue<MessageRequest>> requests;
 		private BotConfig config = BotConfig.Instance;
 
 		internal CmdsManager(ulong botId)
@@ -24,15 +27,28 @@ namespace Fan_Server_Bot
 			helpCmd = new HelpCmd.Cmd(cmds);
 			botMention = "<@" + botId + ">";
 			RegisterCmd(helpCmd);
+			requests = new Queue<Queue<MessageRequest>>();
 		}
 
 		internal async Task OnMessage(SocketMessage message)
 		{
-			if (message.Content.Equals(botMention))
+			MessageRequest request = GetRequest(message);
+			if (request != null)
+			{
+				if (message.Content.ToLower().Equals(CANCEL_MESSAGE))
+				{
+					request.Cancel();
+				}
+				else
+				{
+					request.Resolve(message);
+				}
+			}
+			else if (message.Content.Equals(botMention))
 			{
 				await ExecuteCmd(message, helpCmd, null);
 			}
-			if (message.Content.StartsWith(config.CmdPrefix))
+			else if (message.Content.StartsWith(config.CmdPrefix))
 			{
 				bool isOwner = false;
 				if (message.Author is IGuildUser guildUser)
@@ -97,9 +113,39 @@ namespace Fan_Server_Bot
 			}
 		}
 
+		private MessageRequest GetRequest(SocketMessage message)
+		{
+			MessageRequest request = null;
+			if (requests.Peek().Peek().Matches(message))
+			{
+				request = requests.Peek().Dequeue();
+				if (requests.Peek().Count() == 0)
+				{
+					requests.Dequeue();
+				}
+				else
+				{
+					requests.Peek().Peek().Prompt();
+				}
+					
+			}
+			return request;
+		}
+
 		private void RegisterCmd(ICmd cmd)
 		{
 			cmds.Add(cmd);
+		}
+
+		internal void RegisterRequests(MessageRequest[] newRequests)
+		{
+			requests.Enqueue(new Queue<MessageRequest>(newRequests));
+			newRequests.First().Prompt();
+		}
+
+		internal void ClearRequests()
+		{
+			requests.Clear();
 		}
 	}
 }
