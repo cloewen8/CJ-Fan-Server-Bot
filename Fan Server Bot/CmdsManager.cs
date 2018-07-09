@@ -19,6 +19,7 @@ namespace Fan_Server_Bot
 		private List<ICmd> cmds = new List<ICmd>();
 		private readonly ICmd helpCmd;
 		private readonly string botMention;
+		private readonly Regex mentionPrefix;
 		private Queue<Queue<MessageRequest>> requests;
 		private BotConfig config = BotConfig.Instance;
 
@@ -26,6 +27,7 @@ namespace Fan_Server_Bot
 		{
 			helpCmd = new HelpCmd.Cmd(cmds);
 			botMention = "<@" + botId + ">";
+			mentionPrefix = new Regex("^" + botMention + "\\s*");
 			RegisterCmd(helpCmd);
 			requests = new Queue<Queue<MessageRequest>>();
 		}
@@ -48,18 +50,31 @@ namespace Fan_Server_Bot
 			{
 				await ExecuteCmd(message, helpCmd, null);
 			}
-			else if (message.Content.StartsWith(config.CmdPrefix))
+			else
 			{
-				bool isOwner = false;
-				if (message.Author is IGuildUser guildUser)
-					isOwner = guildUser.RoleIds.Any((role) => role == config.OwnerRoleId);
-				ICmd found = (from cmd in cmds
-				              where AllowedCmd(cmd, message.Author) &&
-				              	cmd.Pattern.IsMatch(message.Content, 1)
-				              select cmd).FirstOrDefault();
-				if (found != null)
+				int offset = -1;
+				if (message.Content.StartsWith(config.CmdPrefix))
 				{
-					await ExecuteCmd(message, found, found.Pattern.Match(message.Content, 1).Captures);
+					offset = config.CmdPrefix.Length;
+				}
+				else if (mentionPrefix.IsMatch(message.Content))
+				{
+					offset = mentionPrefix.Match(message.Content).Length;
+				}
+
+				if (offset > 0)
+				{
+					bool isOwner = false;
+					if (message.Author is IGuildUser guildUser)
+						isOwner = guildUser.RoleIds.Any((role) => role == config.OwnerRoleId);
+					ICmd found = (from cmd in cmds
+								  where AllowedCmd(cmd, message.Author) &&
+									  cmd.Pattern.IsMatch(message.Content, offset)
+								  select cmd).FirstOrDefault();
+					if (found != null)
+					{
+						await ExecuteCmd(message, found, found.Pattern.Match(message.Content, offset).Captures);
+					}
 				}
 			}
 		}
@@ -116,10 +131,11 @@ namespace Fan_Server_Bot
 		private MessageRequest GetRequest(SocketMessage message)
 		{
 			MessageRequest request = null;
-			if (requests.Peek().Peek().Matches(message))
+			if (requests.Count > 0 && requests.Peek().Count > 0 &&
+				requests.Peek().Peek().Matches(message))
 			{
 				request = requests.Peek().Dequeue();
-				if (requests.Peek().Count() == 0)
+				if (requests.Peek().Count == 0)
 				{
 					requests.Dequeue();
 				}
