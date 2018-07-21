@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure;
@@ -14,14 +15,11 @@ namespace Bot
 {
 	public class WorkerRole : RoleEntryPoint
 	{
-		private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-		private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
+		private readonly Bot bot = new Bot();
+		private bool runComplete = false;
 
 		public override bool OnStart()
 		{
-			// Set the maximum number of concurrent connections
-			ServicePointManager.DefaultConnectionLimit = 12;
-
 			// For information on handling configuration changes
 			// see the MSDN topic at https://go.microsoft.com/fwlink/?LinkId=166357.
 
@@ -34,38 +32,25 @@ namespace Bot
 
 		public override void Run()
 		{
-			Trace.TraceInformation("Bot is running");
-
 			try
 			{
-				this.RunAsync(this.cancellationTokenSource.Token).Wait();
+				bot.StartAsync().Wait();
 			}
 			finally
 			{
-				this.runCompleteEvent.Set();
+				runComplete = true;
 			}
 		}
 
 		public override void OnStop()
 		{
-			Trace.TraceInformation("Bot is stopping");
-
-			this.cancellationTokenSource.Cancel();
-			this.runCompleteEvent.WaitOne();
+			if (!runComplete)
+				bot.StopAsync();
+			runComplete = true;
 
 			base.OnStop();
 
 			Trace.TraceInformation("Bot has stopped");
-		}
-
-		private async Task RunAsync(CancellationToken cancellationToken)
-		{
-			// TODO: Replace the following with your own logic.
-			while (!cancellationToken.IsCancellationRequested)
-			{
-				Trace.TraceInformation("Working");
-				await Task.Delay(1000);
-			}
 		}
 	}
 }
