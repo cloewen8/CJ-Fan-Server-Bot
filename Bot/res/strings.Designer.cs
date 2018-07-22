@@ -86,9 +86,7 @@ namespace Bot.res {
         ///- If a command spans multiple lines, you will need to provide multiple messages.
         ///- Text items on their own are required.
         ///- Optional items are surrounded by square brackets.
-        ///- You need to choose an item for text items surrounded by braces, separated by vertical bars.
-        ///
-        ///**Example:** */help*.
+        ///- You need to choose an item for text items surrounded by braces, separated by vertical bars..
         /// </summary>
         internal static string HelpBody {
             get {

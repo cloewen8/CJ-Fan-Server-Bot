@@ -39,11 +39,20 @@ namespace HelpCmd
 
 		public async Task Execute(Call call)
 		{
+			StringBuilder bodyBuilder = new StringBuilder();
+			bodyBuilder.AppendLine(body);
+			bodyBuilder.AppendLine();
+			bodyBuilder.Append("**");
+			bodyBuilder.Append(strings.HelpExample);
+			bodyBuilder.Append("** *");
+			bodyBuilder.Append(Call.Prefix);
+			bodyBuilder.Append(Usage[0]);
+			bodyBuilder.Append("*");
 			EmbedBuilder builder = new EmbedBuilder
 			{
 				Title = Name,
 				Color = primaryColor,
-				Description = body
+				Description = bodyBuilder.ToString()
 			};
 			AddCmdFields((from cmd in Cmds
 			              where cmd is IDoc && CmdsManager.AllowedCmd(cmd, call.Message.Author)

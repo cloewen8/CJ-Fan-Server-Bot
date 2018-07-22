@@ -131,9 +131,7 @@ To execute a command, chat the syntax provided for the desired command.
 - If a command spans multiple lines, you will need to provide multiple messages.
 - Text items on their own are required.
 - Optional items are surrounded by square brackets.
-- You need to choose an item for text items surrounded by braces, separated by vertical bars.
-
-**Example:** */help*</value>
+- You need to choose an item for text items surrounded by braces, separated by vertical bars.</value>
   </data>
   <data name="HelpDescription1" xml:space="preserve">
     <value>Displays help information for the bot.</value>

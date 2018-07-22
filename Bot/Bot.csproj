@@ -156,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
+    <Compile Include="Call.cs" />
     <Compile Include="CmdsManager.cs" />
     <Compile Include="Commands\HelpCmd.cs" />
     <Compile Include="Commands\TranslateCmd.cs" />
