@@ -53,7 +53,7 @@ namespace Bot
 			else
 			{
 				int offset = -1;
-				string prefix = CloudConfigurationManager.GetSetting("Bot.CmdsManager.Prefix");
+				string prefix = Call.Prefix;
 				ulong ownerRoleId = ulong.Parse(CloudConfigurationManager.GetSetting("Bot.OwnerRoleId"));
 				if (message.Content.StartsWith(prefix))
 				{
@@ -96,9 +96,9 @@ namespace Bot
 			{
 				double timeout = double.Parse(CloudConfigurationManager.GetSetting("Bot.CmdsManager.Timeout"));
 				CancellationTokenSource cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
-				Task executeTask = cmd.Execute(message,
+				Task executeTask = cmd.Execute(new Call(message,
 					args,
-					cancelSource.Token);
+					cancelSource.Token));
 				await executeTask;
 				cancelSource.Dispose();
 				if (cancelSource.IsCancellationRequested)

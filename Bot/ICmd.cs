@@ -9,6 +9,6 @@ namespace Bot
 	{
 		Regex Pattern { get; }
 		bool OwnerOnly { get; }
-		Task Execute(SocketMessage message, CaptureCollection args, CancellationToken cancelToken);
+		Task Execute(Call call);
 	}
 }

@@ -37,7 +37,7 @@ namespace HelpCmd
 			Cmds = cmds;
 		}
 
-		public async Task Execute(SocketMessage message, CaptureCollection args, CancellationToken cancelToken)
+		public async Task Execute(Call call)
 		{
 			EmbedBuilder builder = new EmbedBuilder
 			{
@@ -46,10 +46,10 @@ namespace HelpCmd
 				Description = body
 			};
 			AddCmdFields((from cmd in Cmds
-			              where cmd is IDoc && CmdsManager.AllowedCmd(cmd, message.Author)
+			              where cmd is IDoc && CmdsManager.AllowedCmd(cmd, call.Message.Author)
 			              select (IDoc) cmd), builder);
 
-			await message.Channel.SendMessageAsync("", false,
+			await call.Message.Channel.SendMessageAsync("", false,
 				builder.Build());
 		}
 
@@ -58,7 +58,7 @@ namespace HelpCmd
 			StringBuilder stringBuilder = new StringBuilder();
 			foreach (IDoc cmd in cmds)
 			{
-				string prefix = CloudConfigurationManager.GetSetting("Bot.CmdsManager.Prefix");
+				string prefix = Call.Prefix;
 				stringBuilder.AppendLine(String.Join("\n", cmd.Description));
 				stringBuilder.AppendLine();
 				stringBuilder.AppendLine("**");

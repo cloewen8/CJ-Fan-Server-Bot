@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Fan Server Bot\Fan Server Bot.csproj" />
+    <ProjectReference Include="..\Bot\Bot.csproj" />
   </ItemGroup>
 
 </Project>

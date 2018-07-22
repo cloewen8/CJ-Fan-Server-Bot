@@ -13,7 +13,7 @@ namespace TranslateCmd
 
 		public bool OwnerOnly => false;
 
-		public Task Execute(SocketMessage message, CaptureCollection args, CancellationToken cancelToken)
+		public Task Execute(Call call)
 		{
 			EmbedBuilder builder = new EmbedBuilder
 			{
@@ -21,7 +21,7 @@ namespace TranslateCmd
 			};
 			EmbedFooterBuilder footer = new EmbedFooterBuilder
 			{
-				Text = $"Submitted by: {message.Author.Username} (${message.Author.Id})"
+				Text = $"Submitted by: {call.Message.Author.Username} (${call.Message.Author.Id})"
 			};
 			builder.Footer = footer;
 
@@ -29,14 +29,14 @@ namespace TranslateCmd
 			{
 				// todo: Use a clustered request.
 				// todo: Handle a cancellation.
-				Task<SocketMessage> originalRequest = message.RequestMessage("What was the original text?");
-				Task<SocketMessage> translateRequest = message.RequestMessage("What is the text translated?");
-				Task<SocketMessage> localeRequest = message.RequestMessage("What language did you translate it to?");
+				Task<SocketMessage> originalRequest = call.Message.RequestMessage("What was the original text?");
+				Task<SocketMessage> translateRequest = call.Message.RequestMessage("What is the text translated?");
+				Task<SocketMessage> localeRequest = call.Message.RequestMessage("What language did you translate it to?");
 				
 				builder.AddField("Original", originalRequest.Result.Content);
 				builder.AddField("Translated", translateRequest.Result);
 				builder.AddField("Locale", localeRequest.Result);
-				message.Channel.SendMessageAsync("", false, builder);
+				call.Message.Channel.SendMessageAsync("", false, builder);
 			});
 
 			return Task.CompletedTask;
