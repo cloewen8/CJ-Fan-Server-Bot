@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Microsoft.WindowsAzure.ServiceRuntime;
 
@@ -36,6 +37,7 @@ namespace Bot
 		{
 			if (!runComplete)
 				bot.StopAsync();
+			GC.Collect();
 			runComplete = true;
 
 			base.OnStop();
