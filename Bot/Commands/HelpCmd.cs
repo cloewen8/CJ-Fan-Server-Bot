@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using Bot;
 using Bot.res;
 using System;
@@ -7,9 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure;
 
 namespace HelpCmd
 {
@@ -57,9 +54,10 @@ namespace HelpCmd
 			AddCmdFields((from cmd in Cmds
 			              where cmd is IDoc && CmdsManager.AllowedCmd(cmd, call.Message.Author)
 			              select (IDoc) cmd), builder);
-
-			await call.Message.Channel.SendMessageAsync("", false,
-				builder.Build());
+			
+			call.RegisterInformation(await call.Message.Channel.SendMessageAsync("", false,
+				builder.Build()));
+			call.Dispose();
 		}
 
 		private void AddCmdFields(IEnumerable<IDoc> cmds, EmbedBuilder builder)

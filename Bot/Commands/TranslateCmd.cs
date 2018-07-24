@@ -25,18 +25,20 @@ namespace TranslateCmd
 			};
 			builder.Footer = footer;
 
-			Task.Run(() =>
+			Task.Run(async () =>
 			{
-				// todo: Use a clustered request.
 				// todo: Handle a cancellation.
-				Task<SocketMessage> originalRequest = call.Message.RequestMessage("What was the original text?");
-				Task<SocketMessage> translateRequest = call.Message.RequestMessage("What is the text translated?");
-				Task<SocketMessage> localeRequest = call.Message.RequestMessage("What language did you translate it to?");
-				
-				builder.AddField("Original", originalRequest.Result.Content);
-				builder.AddField("Translated", translateRequest.Result);
-				builder.AddField("Locale", localeRequest.Result);
-				call.Message.Channel.SendMessageAsync("", false, builder);
+				SocketMessage[] messages = await call.Message.RequestMessages(call, new string[] {
+					"What was the original text?",
+					"What is the text translated?",
+					"What language did you translate it to?"
+				});
+
+				// builder.AddField("Original", originalRequest.Result.Content);
+				// builder.AddField("Translated", translateRequest.Result);
+				// builder.AddField("Locale", localeRequest.Result);
+				// call.Message.Channel.SendMessageAsync("", false, builder);
+				call.Dispose();
 			});
 
 			return Task.CompletedTask;

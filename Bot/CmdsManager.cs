@@ -29,7 +29,9 @@ namespace Bot
 			botMention = "<@" + botId + ">";
 			mentionPrefix = new Regex("^" + botMention + "\\s*");
 			RegisterCmd(helpCmd);
+			RegisterCmd(new TranslateCmd.Cmd());
 			requests = new Queue<Queue<MessageRequest>>();
+			MessageExtensions.Cmds = this;
 		}
 
 		internal async Task OnMessage(SocketMessage message)
@@ -43,6 +45,7 @@ namespace Bot
 				}
 				else
 				{
+					request.Call.RegisterInteraction(message);
 					request.Resolve(message);
 				}
 			}
@@ -96,13 +99,13 @@ namespace Bot
 			{
 				double timeout = double.Parse(CloudConfigurationManager.GetSetting("Bot.CmdsManager.Timeout"));
 				CancellationTokenSource cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
-				Call call = new Call(message,
+				Task executeTask = cmd.Execute(new Call(message,
 					args,
-					cancelSource.Token);
-				Task executeTask = cmd.Execute(call);
+					cancelSource.Token));
 				await executeTask;
+				bool cancelled = cancelSource.IsCancellationRequested;
 				cancelSource.Dispose();
-				if (cancelSource.IsCancellationRequested)
+				if (cancelled)
 				{
 					throw new TimeoutException();
 				}
@@ -159,7 +162,7 @@ namespace Bot
 			cmds.Add(cmd);
 		}
 
-		internal void RegisterRequests(MessageRequest[] newRequests)
+		internal void RegisterRequests(params MessageRequest[] newRequests)
 		{
 			requests.Enqueue(new Queue<MessageRequest>(newRequests));
 			newRequests.First().Prompt();

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bot
 {
@@ -13,9 +14,10 @@ namespace Bot
 	{
 		private CaptureCollection args;
 		private CancellationToken cancelToken;
-		// todo: Implement prompt interactions (deleted if the same message is sent, enough other messages are sent, or enough time passes).
-		// todo: Implement information interactions (deleted when enough time passes).
 		private List<IDeletable> interactions;
+		private List<IDeletable> information;
+
+		private const int INFORMATION_DELETE_DELAY = 600000; // 10 minutes
 
 		public SocketMessage Message { get; private set; }
 		public bool IsCancellationRequested {
@@ -34,9 +36,11 @@ namespace Bot
 			this.args = args;
 			this.cancelToken = cancelToken;
 			this.interactions = new List<IDeletable>();
+			this.information = new List<IDeletable>();
 			this.Message = message;
 			this.interactions.Add(message);
 			GC.SuppressFinalize(this.interactions);
+			GC.SuppressFinalize(this.information);
 		}
 
 		public string GetArgString(int index) {
@@ -49,7 +53,12 @@ namespace Bot
 
 		public void RegisterInteraction(IDeletable interaction)
 		{
-			interactions.Add(interaction);
+			this.interactions.Add(interaction);
+		}
+
+		public void RegisterInformation(IDeletable information)
+		{
+			this.information.Add(information);
 		}
 
 		public void Dispose()
@@ -61,11 +70,14 @@ namespace Bot
 					deletable.DeleteAsync();
 				}
 				interactions = null;
+				Task.Delay(INFORMATION_DELETE_DELAY).ContinueWith((_) => {
+					foreach (IDeletable deletable in information)
+					{
+						deletable.DeleteAsync();
+					}
+					information = null;
+				});
 			}
-		}
-
-		~Call() {
-			Dispose();
 		}
 	}
 }
