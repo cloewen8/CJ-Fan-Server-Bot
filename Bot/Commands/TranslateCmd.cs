@@ -17,13 +17,12 @@ namespace TranslateCmd
 		{
 			EmbedBuilder builder = new EmbedBuilder
 			{
-				Title = "User Requested Translation"
+				Title = "User Requested Translation",
+				Footer = new EmbedFooterBuilder
+				{
+					Text = $"Submitted by: {call.Message.Author.Username} (${call.Message.Author.Id})"
+				}
 			};
-			EmbedFooterBuilder footer = new EmbedFooterBuilder
-			{
-				Text = $"Submitted by: {call.Message.Author.Username} (${call.Message.Author.Id})"
-			};
-			builder.Footer = footer;
 
 			Task.Run(async () =>
 			{

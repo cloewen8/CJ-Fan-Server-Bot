@@ -112,7 +112,7 @@ namespace Bot
 
 		public bool Matches(SocketMessage candidate)
 		{
-			return candidate.Author.Equals(author) && pattern.IsMatch(candidate.Content);
+			return candidate.Author.Equals(author) && candidate.Channel.Equals(channel) && pattern.IsMatch(candidate.Content);
 		}
 	}
 }
