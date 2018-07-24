@@ -33,7 +33,7 @@ namespace Bot
 			requests = new Queue<Queue<MessageRequest>>();
 			MessageExtensions.Cmds = this;
 		}
-
+		
 		internal async Task OnMessage(SocketMessage message)
 		{
 			MessageRequest request = GetRequest(message);

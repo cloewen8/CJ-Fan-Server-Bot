@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace Bot
 {
-	public interface ICmd
+	public interface ICmd : IExecutable<Call>
 	{
 		Regex Pattern { get; }
 		bool OwnerOnly { get; }
-		Task Execute(Call call);
 	}
 }

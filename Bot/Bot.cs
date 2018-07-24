@@ -48,8 +48,10 @@ namespace Bot
 		private async Task OnConnected()
 		{
 			string name = CloudConfigurationManager.GetSetting("Bot.Name");
-			cmds = new CmdsManager(client.CurrentUser.Id);
 
+			RuleAgreement ruleAgreement = new RuleAgreement();
+			cmds = new CmdsManager(client.CurrentUser.Id);
+			
 			if (name != null && client.CurrentUser.Username != name)
 			{
 				Trace.WriteLine("The username is incorrect and will be modified.");
@@ -57,6 +59,8 @@ namespace Bot
 					user.Username = name);
 			}
 
+			client.UserJoined += ruleAgreement.OnUserJoined;
+			client.MessageReceived += ruleAgreement.OnMessage;
 			client.MessageReceived += cmds.OnMessage;
 		}
 
