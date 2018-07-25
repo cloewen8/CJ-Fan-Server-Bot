@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 
 namespace HelpCmd
 {
@@ -18,7 +19,6 @@ namespace HelpCmd
 
 		public Regex Pattern => new Regex(@"(?:help|\?)");
 		public bool OwnerOnly => false;
-		private IEnumerable<ICmd> Cmds { get; set; }
 
 		public string Name => strings.HelpName;
 		public string[] Description => new string[] {
@@ -28,11 +28,6 @@ namespace HelpCmd
 			"help"
 		};
 		public string Example => "help";
-
-		internal Cmd(IEnumerable<ICmd> cmds)
-		{
-			Cmds = cmds;
-		}
 
 		public async Task Execute(Call call)
 		{
@@ -51,7 +46,7 @@ namespace HelpCmd
 				Color = primaryColor,
 				Description = bodyBuilder.ToString()
 			};
-			AddCmdFields((from cmd in Cmds
+			AddCmdFields((from cmd in call.Manager.Cmds
 			              where cmd is IDoc && CmdsManager.AllowedCmd(cmd, call.Message.Author)
 			              select (IDoc) cmd), builder);
 			

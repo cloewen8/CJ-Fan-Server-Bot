@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace Bot
 			client = new DiscordSocketClient();
 
 			client.Log += OnLog;
-			client.Connected += OnConnected;
+			client.Ready += OnReady;
 			client.Disconnected += OnDisconnected;
 
 			if (CloudConfigurationManager.GetSetting("Bot.Token") != null)
@@ -34,6 +35,7 @@ namespace Bot
 			else
 			{
 				Trace.WriteLine("Missing token!");
+				runComplete.Set();
 			}
 		}
 
@@ -41,27 +43,26 @@ namespace Bot
 		{
 			await client.LogoutAsync();
 			await client.StopAsync();
-			cmds.ClearRequests();
 			runComplete.Set();
 		}
 
-		private async Task OnConnected()
+		private async Task OnReady()
 		{
 			string name = CloudConfigurationManager.GetSetting("Bot.Name");
-
-			RuleAgreement ruleAgreement = new RuleAgreement();
-			cmds = new CmdsManager(client.CurrentUser.Id);
 			
+			foreach (Type loadable in AppDomain.CurrentDomain.GetAssemblies()
+				.SelectMany((assembly) => assembly.GetTypes())
+				.Where((type) => type.GetInterfaces().Contains(typeof(ILoadable))))
+			{
+				((ILoadable) Activator.CreateInstance(loadable)).Load(client);
+			}
+
 			if (name != null && client.CurrentUser.Username != name)
 			{
 				Trace.WriteLine("The username is incorrect and will be modified.");
 				await client.CurrentUser.ModifyAsync(user =>
 					user.Username = name);
 			}
-
-			client.UserJoined += ruleAgreement.OnUserJoined;
-			client.MessageReceived += ruleAgreement.OnMessage;
-			client.MessageReceived += cmds.OnMessage;
 		}
 
 		private async Task OnLog(Discord.LogMessage message)
@@ -119,6 +120,7 @@ namespace Bot
 			excBuilder.AppendLine();
 			excBuilder.Append(exc.StackTrace);
 			Trace.TraceError(excBuilder.ToString());
+			runComplete.Set();
 		}
 	}
 }

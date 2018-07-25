@@ -13,28 +13,42 @@ using System.Threading.Tasks;
 
 namespace Bot
 {
-	class CmdsManager
+	public class CmdsManager : ILoadable
 	{
 		private const string CANCEL_MESSAGE = "cancel";
 
-		private List<ICmd> cmds = new List<ICmd>();
-		private readonly ICmd helpCmd;
-		private readonly string botMention;
-		private readonly Regex mentionPrefix;
+		private HelpCmd.Cmd helpCmd;
+		private string botMention;
+		private Regex mentionPrefix;
 		private Queue<Queue<MessageRequest>> requests;
 
-		internal CmdsManager(ulong botId)
+		public List<ICmd> Cmds { get; private set; }
+
+		public async void Load(DiscordSocketClient client)
 		{
-			helpCmd = new HelpCmd.Cmd(cmds);
-			botMention = "<@" + botId + ">";
+			Cmds = new List<ICmd>();
+			botMention = "<@" + client.CurrentUser.Id + ">";
 			mentionPrefix = new Regex("^" + botMention + "\\s*");
-			RegisterCmd(helpCmd);
-			RegisterCmd(new TranslateCmd.Cmd());
+			foreach (Type cmd in System.Reflection.Assembly.GetExecutingAssembly()
+				.GetTypes()
+				.Where((type) => type.GetInterfaces().Contains(typeof(ICmd))))
+			{
+				RegisterCmd((ICmd) Activator.CreateInstance(cmd));
+			}
+			helpCmd = (HelpCmd.Cmd) Cmds.First((cmd) => typeof(HelpCmd.Cmd).IsInstanceOfType(cmd)); // fixme: Returns no result.
 			requests = new Queue<Queue<MessageRequest>>();
 			MessageExtensions.Cmds = this;
+
+			client.LoggedOut += Unload;
+			client.MessageReceived += OnMessage;
 		}
-		
-		internal async Task OnMessage(SocketMessage message)
+
+		private async Task Unload()
+		{
+			ClearRequests();
+		}
+
+		private async Task OnMessage(SocketMessage message)
 		{
 			MessageRequest request = GetRequest(message);
 			if (request != null)
@@ -72,7 +86,7 @@ namespace Bot
 					bool isOwner = false;
 					if (message.Author is IGuildUser guildUser)
 						isOwner = guildUser.RoleIds.Any((role) => role == ownerRoleId);
-					ICmd found = (from cmd in cmds
+					ICmd found = (from cmd in Cmds
 								  where AllowedCmd(cmd, message.Author) &&
 									  cmd.Pattern.IsMatch(message.Content, offset)
 								  select cmd).FirstOrDefault();
@@ -99,7 +113,8 @@ namespace Bot
 			{
 				double timeout = double.Parse(CloudConfigurationManager.GetSetting("Bot.CmdsManager.Timeout"));
 				CancellationTokenSource cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
-				Task executeTask = cmd.Execute(new Call(message,
+				Task executeTask = cmd.Execute(new Call(this,
+					message,
 					args,
 					cancelSource.Token));
 				await executeTask;
@@ -159,7 +174,7 @@ namespace Bot
 
 		private void RegisterCmd(ICmd cmd)
 		{
-			cmds.Add(cmd);
+			Cmds.Add(cmd);
 		}
 
 		internal void RegisterRequests(params MessageRequest[] newRequests)
@@ -168,7 +183,7 @@ namespace Bot
 			newRequests.First().Prompt();
 		}
 
-		internal void ClearRequests()
+		private void ClearRequests()
 		{
 			requests.Clear();
 		}

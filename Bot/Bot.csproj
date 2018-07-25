@@ -161,6 +161,8 @@
     <Compile Include="Commands\HelpCmd.cs" />
     <Compile Include="Commands\TranslateCmd.cs" />
     <Compile Include="ICmd.cs" />
+    <Compile Include="IExecutable.cs" />
+    <Compile Include="ILoadable.cs" />
     <Compile Include="MessageExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="res\strings.Designer.cs">

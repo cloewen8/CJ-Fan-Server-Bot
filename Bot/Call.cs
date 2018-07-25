@@ -19,6 +19,7 @@ namespace Bot
 
 		private const int INFORMATION_DELETE_DELAY = 600000; // 10 minutes
 
+		public CmdsManager Manager { get; private set; }
 		public SocketMessage Message { get; private set; }
 		public bool IsCancellationRequested {
 			get {
@@ -31,12 +32,13 @@ namespace Bot
 			}
 		}
 
-		internal Call(SocketMessage message, CaptureCollection args, CancellationToken cancelToken)
+		internal Call(CmdsManager manager, SocketMessage message, CaptureCollection args, CancellationToken cancelToken)
 		{
 			this.args = args;
 			this.cancelToken = cancelToken;
 			this.interactions = new List<IDeletable>();
 			this.information = new List<IDeletable>();
+			this.Manager = manager;
 			this.Message = message;
 			this.interactions.Add(message);
 			GC.SuppressFinalize(this.interactions);
