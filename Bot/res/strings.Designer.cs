@@ -61,6 +61,17 @@ namespace Bot.res {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ignore for now, future feature...
+        ///
+        ///.
+        /// </summary>
+        internal static string AgreeMessage {
+            get {
+                return ResourceManager.GetString("AgreeMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A command failed to execute. Please contact the server owner..
         /// </summary>
         internal static string CmdFailedToExecute {
