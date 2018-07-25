@@ -22,25 +22,28 @@ namespace Bot
 
 		public async void Load(DiscordSocketClient client)
 		{
-			SocketTextChannel rulesChannel = (SocketTextChannel)client.GetChannel(RULES_CHANNEL);
-			try
-			{
-				foreach (IMessage message in await rulesChannel.GetMessagesAsync(2).Flatten())
+			//if (CurrentEnvironment.Get.Equals(Environment.PRODUCTION))
+			//{
+				SocketTextChannel rulesChannel = (SocketTextChannel)client.GetChannel(RULES_CHANNEL);
+				try
 				{
-					if (!message.Equals(codeMessage) && message.Author.Id.Equals(client.CurrentUser.Id))
+					foreach (IMessage message in await rulesChannel.GetMessagesAsync(2).Flatten())
 					{
-						await message.DeleteAsync();
+						if (!message.Equals(codeMessage) && message.Author.Id.Equals(client.CurrentUser.Id))
+						{
+							await message.DeleteAsync();
+						}
 					}
 				}
-			}
-			catch (Exception exc)
-			{
-				Trace.WriteLine(exc);
-			}
-			codeMessage = await rulesChannel.SendMessageAsync(getCodeMessage(getCurrentTime()));
+				catch (Exception exc)
+				{
+					Trace.WriteLine(exc);
+				}
+				codeMessage = await rulesChannel.SendMessageAsync(getCodeMessage(getCurrentTime()));
 
-			client.UserJoined += OnUserJoined;
-			client.MessageReceived += OnMessage;
+				client.UserJoined += OnUserJoined;
+				client.MessageReceived += OnMessage;
+			//}
 		}
 
 		private async Task OnUserJoined(SocketGuildUser user)

@@ -160,6 +160,7 @@
     <Compile Include="CmdsManager.cs" />
     <Compile Include="Commands\HelpCmd.cs" />
     <Compile Include="Commands\TranslateCmd.cs" />
+    <Compile Include="Environment.cs" />
     <Compile Include="ICmd.cs" />
     <Compile Include="IExecutable.cs" />
     <Compile Include="ILoadable.cs" />
