@@ -117,10 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AgreeMessage" xml:space="preserve">
-    <value>Ignore for now, future feature...
+  <data name="AgreementNotice" xml:space="preserve">
+    <value>The CJ Fan Server requires you agree to their rules before you can chat freely. Please read the #rules channel for more information.</value>
+  </data>
+  <data name="AgreementPrompt" xml:space="preserve">
+    <value>If you are a new member, you must agree to these rules, to do so, please enter the code below in #verify-channel.
 
 </value>
+  </data>
+  <data name="AgreementSuccess" xml:space="preserve">
+    <value>Your confirmation was received, enjoy the server!</value>
   </data>
   <data name="CmdFailedToExecute" xml:space="preserve">
     <value>A command failed to execute. Please contact the server owner.</value>

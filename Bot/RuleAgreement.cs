@@ -3,8 +3,8 @@ using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bot
@@ -13,6 +13,7 @@ namespace Bot
 	{
 		private double refreshTime = 0;
 		private RestUserMessage codeMessage;
+		private string code;
 
 		private const ulong APPROVED_ROLE = 459849869339787277;
 		private const ulong RULES_CHANNEL = 465662927064793108;
@@ -22,16 +23,17 @@ namespace Bot
 
 		public async void Load(DiscordSocketClient client)
 		{
-			//if (CurrentEnvironment.Get.Equals(Environment.PRODUCTION))
-			//{
+			if (CurrentEnvironment.Get.Equals(Environment.PRODUCTION))
+			{
 				SocketTextChannel rulesChannel = (SocketTextChannel)client.GetChannel(RULES_CHANNEL);
 				try
 				{
-					foreach (IMessage message in await rulesChannel.GetMessagesAsync(2).Flatten())
+					foreach (IMessage message in await rulesChannel.GetMessagesAsync(2).FlattenAsync())
 					{
-						if (!message.Equals(codeMessage) && message.Author.Id.Equals(client.CurrentUser.Id))
+						if (message.Author.Id.Equals(client.CurrentUser.Id))
 						{
-							await message.DeleteAsync();
+							codeMessage = (RestUserMessage) message;
+							break;
 						}
 					}
 				}
@@ -39,23 +41,67 @@ namespace Bot
 				{
 					Trace.WriteLine(exc);
 				}
-				codeMessage = await rulesChannel.SendMessageAsync(getCodeMessage(getCurrentTime()));
+				if (codeMessage == null)
+				{
+					codeMessage = await rulesChannel.SendMessageAsync(getCodeMessage(getCurrentTime()));
+				}
+				else
+				{
+					await codeMessage.ModifyAsync((messageProps) =>
+					{
+						messageProps.Content = getCodeMessage(getCurrentTime());
+					}, new RequestOptions()
+					{
+						RetryMode = RetryMode.RetryTimeouts | RetryMode.Retry502
+					});
+				}
 
 				client.UserJoined += OnUserJoined;
 				client.MessageReceived += OnMessage;
-			//}
+				client.UserVoiceStateUpdated += OnVoiceUpdated;
+			}
 		}
 
 		private async Task OnUserJoined(SocketGuildUser user)
 		{
-			// todo: Try to dm the user about needing to agree to the rules.
+			try
+			{
+				await (await user.GetOrCreateDMChannelAsync())
+					.SendMessageAsync(strings.AgreementNotice);
+			}
+			catch
+			{
+			}
 		}
 
 		private async Task OnMessage(SocketMessage message)
 		{
-			// If the user does not have the Little Fish role,
-			//  If the message is the invite code, accept it (give the user the Little Fish role, schedule the code refresh).
-			//  Delete the message.
+			IGuildUser user = (IGuildUser) message.Author;
+			if (!user.IsBot && !user.RoleIds.Any((id) => id == APPROVED_ROLE))
+			{
+				if (message.Content.Equals(code))
+				{
+					await user.AddRoleAsync(user.Guild.Roles.First((role) => role.Id == APPROVED_ROLE));
+					await UpdateMessage();
+					try
+					{
+						await (await user.GetOrCreateDMChannelAsync())
+							.SendMessageAsync(strings.AgreementSuccess);
+					}
+					catch
+					{
+					}
+				}
+				await message.DeleteAsync(new RequestOptions() { RetryMode = RetryMode.AlwaysRetry });
+			}
+		}
+
+		private async Task OnVoiceUpdated(SocketUser user, SocketVoiceState oldState, SocketVoiceState newState)
+		{
+			if (newState.VoiceChannel != null)
+			{
+				await newState.VoiceChannel.DisconnectAsync();
+			}
 		}
 
 		private double getCurrentTime()
@@ -65,11 +111,11 @@ namespace Bot
 
 		private string getCodeMessage(double currentTime)
 		{
-			return strings.AgreeMessage +
-				Convert.ToInt64(currentTime).ToString("X").Substring(0, CODE_LENGTH);
+			code = Convert.ToInt64(currentTime).ToString("X").Substring(0, CODE_LENGTH);
+			return strings.AgreementPrompt + code;
 		}
 
-		private async void UpdateMessage()
+		private async Task UpdateMessage()
 		{
 			double currentTime = getCurrentTime();
 			if (currentTime > refreshTime)

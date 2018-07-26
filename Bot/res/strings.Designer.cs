@@ -61,13 +61,31 @@ namespace Bot.res {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ignore for now, future feature...
+        ///   Looks up a localized string similar to The CJ Fan Server requires you agree to their rules before you can chat freely. Please read the #rules channel for more information..
+        /// </summary>
+        internal static string AgreementNotice {
+            get {
+                return ResourceManager.GetString("AgreementNotice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If you are a new member, you must agree to these rules, to do so, please enter the code below in #verify-channel.
         ///
         ///.
         /// </summary>
-        internal static string AgreeMessage {
+        internal static string AgreementPrompt {
             get {
-                return ResourceManager.GetString("AgreeMessage", resourceCulture);
+                return ResourceManager.GetString("AgreementPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your confirmation was received, enjoy the server!.
+        /// </summary>
+        internal static string AgreementSuccess {
+            get {
+                return ResourceManager.GetString("AgreementSuccess", resourceCulture);
             }
         }
         
