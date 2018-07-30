@@ -6,16 +6,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using Microsoft.Azure;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace Bot
 {
-	class Bot
+	public class Bot
 	{
 		private ManualResetEvent runComplete;
 		private DiscordSocketClient client;
 		private CmdsManager cmds;
 
-		internal async Task StartAsync()
+		public async Task StartAsync()
 		{
 			runComplete = new ManualResetEvent(false);
 			client = new DiscordSocketClient();
@@ -26,11 +27,13 @@ namespace Bot
 
 			if (CloudConfigurationManager.GetSetting("Bot.Token") != null)
 			{
+				RoleEnvironment.TraceSource.Switch.Level = SourceLevels.Information;
 				Trace.WriteLine("Logging in.");
 				await client.LoginAsync(Discord.TokenType.Bot,
 					CloudConfigurationManager.GetSetting("Bot.Token"));
 				await client.StartAsync();
 				runComplete.WaitOne();
+				StopAsync();
 			}
 			else
 			{
@@ -39,7 +42,7 @@ namespace Bot
 			}
 		}
 
-		internal async void StopAsync()
+		private async void StopAsync()
 		{
 			await client.LogoutAsync();
 			await client.StopAsync();

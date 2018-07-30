@@ -265,7 +265,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="RuleAgreement.cs" />
-    <Compile Include="WorkerRole.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
