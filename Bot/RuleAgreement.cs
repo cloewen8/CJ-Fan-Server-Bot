@@ -23,7 +23,7 @@ namespace Bot
 
 		public async void Load(DiscordSocketClient client)
 		{
-			if (CurrentEnvironment.Get.Equals(Environment.PRODUCTION))
+			if (!Bot.Config.IsDevelopment)
 			{
 				SocketTextChannel rulesChannel = (SocketTextChannel)client.GetChannel(RULES_CHANNEL);
 				try

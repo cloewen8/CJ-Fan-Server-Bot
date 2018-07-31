@@ -1,9 +1,9 @@
 ﻿using Bot.res;
 using Discord;
 using Discord.WebSocket;
-using Microsoft.Azure;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -22,10 +22,12 @@ namespace Bot
 		private Regex mentionPrefix;
 		private Queue<Queue<MessageRequest>> requests;
 
+		public static Configuration.CmdsManagerSection Config { get; private set; }
 		public List<ICmd> Cmds { get; private set; }
 
 		public async void Load(DiscordSocketClient client)
 		{
+			Config = (Configuration.CmdsManagerSection) ConfigurationManager.GetSection("cmdsManager");
 			Cmds = new List<ICmd>();
 			botMention = "<@" + client.CurrentUser.Id + ">";
 			mentionPrefix = new Regex("^" + botMention + "\\s*");
@@ -70,8 +72,7 @@ namespace Bot
 			else
 			{
 				int offset = -1;
-				string prefix = Call.Prefix;
-				ulong ownerRoleId = ulong.Parse(CloudConfigurationManager.GetSetting("Bot.OwnerRoleId"));
+				string prefix = Config.Prefix;
 				if (message.Content.StartsWith(prefix))
 				{
 					offset = prefix.Length;
@@ -85,7 +86,7 @@ namespace Bot
 				{
 					bool isOwner = false;
 					if (message.Author is IGuildUser guildUser)
-						isOwner = guildUser.RoleIds.Any((role) => role == ownerRoleId);
+						isOwner = guildUser.RoleIds.Any((role) => role == Bot.Config.OwnerRoleId);
 					ICmd found = (from cmd in Cmds
 								  where AllowedCmd(cmd, message.Author) &&
 									  cmd.Pattern.IsMatch(message.Content, offset)
@@ -101,9 +102,8 @@ namespace Bot
 		public static bool AllowedCmd(ICmd cmd, SocketUser user)
 		{
 			bool isOwner = false;
-			ulong ownerRoleId = ulong.Parse(CloudConfigurationManager.GetSetting("Bot.OwnerRoleId"));
 			if (user is IGuildUser guildUser)
-				isOwner = guildUser.RoleIds.Any((role) => role == ownerRoleId);
+				isOwner = guildUser.RoleIds.Any((role) => role == Bot.Config.OwnerRoleId);
 			return isOwner || !cmd.OwnerOnly;
 		}
 
@@ -111,8 +111,7 @@ namespace Bot
 		{
 			try
 			{
-				double timeout = double.Parse(CloudConfigurationManager.GetSetting("Bot.CmdsManager.Timeout"));
-				CancellationTokenSource cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
+				CancellationTokenSource cancelSource = new CancellationTokenSource(TimeSpan.FromSeconds(Config.Timeout));
 				Task executeTask = cmd.Execute(new Call(this,
 					message,
 					args,
@@ -134,10 +133,9 @@ namespace Bot
 			}
 			catch (TimeoutException)
 			{
-				string botName = CloudConfigurationManager.GetSetting("Bot.Name");
 				Trace.TraceWarning(strings.CmdOutOfTime);
 				await message.Channel.SendMessageAsync(
-					"The " + botName + " ran out of time to respond! Try again shortly.");
+					"The bot ran out of time to respond! Try again shortly.");
 			}
 			catch (Exception exc)
 			{

@@ -26,11 +26,6 @@ namespace Bot
 				return cancelToken.IsCancellationRequested;
 			}
 		}
-		public static string Prefix {
-			get {
-				return CloudConfigurationManager.GetSetting("Bot.CmdsManager.Prefix");
-			}
-		}
 
 		internal Call(CmdsManager manager, SocketMessage message, CaptureCollection args, CancellationToken cancelToken)
 		{

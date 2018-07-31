@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using Microsoft.Azure;
-using Microsoft.WindowsAzure.ServiceRuntime;
+using System.Configuration;
 
 namespace Bot
 {
@@ -14,32 +13,25 @@ namespace Bot
 	{
 		private ManualResetEvent runComplete;
 		private DiscordSocketClient client;
-		private CmdsManager cmds;
+
+		public static Configuration.BotSection Config { get; private set; }
 
 		public async Task StartAsync()
 		{
+			Config = (Configuration.BotSection) ConfigurationManager.GetSection("bot");
 			runComplete = new ManualResetEvent(false);
 			client = new DiscordSocketClient();
 
 			client.Log += OnLog;
 			client.Ready += OnReady;
 			client.Disconnected += OnDisconnected;
-
-			if (CloudConfigurationManager.GetSetting("Bot.Token") != null)
-			{
-				RoleEnvironment.TraceSource.Switch.Level = SourceLevels.Information;
-				Trace.WriteLine("Logging in.");
-				await client.LoginAsync(Discord.TokenType.Bot,
-					CloudConfigurationManager.GetSetting("Bot.Token"));
-				await client.StartAsync();
-				runComplete.WaitOne();
-				StopAsync();
-			}
-			else
-			{
-				Trace.WriteLine("Missing token!");
-				runComplete.Set();
-			}
+			
+			Trace.WriteLine("Logging in.");
+			await client.LoginAsync(Discord.TokenType.Bot,
+				Config.Token);
+			await client.StartAsync();
+			runComplete.WaitOne();
+			StopAsync();
 		}
 
 		private async void StopAsync()
@@ -51,20 +43,11 @@ namespace Bot
 
 		private async Task OnReady()
 		{
-			string name = CloudConfigurationManager.GetSetting("Bot.Name");
-			
 			foreach (Type loadable in AppDomain.CurrentDomain.GetAssemblies()
 				.SelectMany((assembly) => assembly.GetTypes())
 				.Where((type) => type.GetInterfaces().Contains(typeof(ILoadable))))
 			{
 				((ILoadable) Activator.CreateInstance(loadable)).Load(client);
-			}
-
-			if (name != null && client.CurrentUser.Username != name)
-			{
-				Trace.WriteLine("The username is incorrect and will be modified.");
-				await client.CurrentUser.ModifyAsync(user =>
-					user.Username = name);
 			}
 		}
 

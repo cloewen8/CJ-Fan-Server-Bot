@@ -37,7 +37,7 @@ namespace HelpCmd
 			bodyBuilder.Append("**");
 			bodyBuilder.Append(strings.HelpExample);
 			bodyBuilder.Append("** *");
-			bodyBuilder.Append(Call.Prefix);
+			bodyBuilder.Append(CmdsManager.Config.Prefix);
 			bodyBuilder.Append(Usage[0]);
 			bodyBuilder.Append("*");
 			EmbedBuilder builder = new EmbedBuilder
@@ -60,7 +60,7 @@ namespace HelpCmd
 			StringBuilder stringBuilder = new StringBuilder();
 			foreach (IDoc cmd in cmds)
 			{
-				string prefix = Call.Prefix;
+				string prefix = CmdsManager.Config.Prefix;
 				stringBuilder.AppendLine(String.Join("\n", cmd.Description));
 				stringBuilder.AppendLine();
 				stringBuilder.AppendLine("**");
